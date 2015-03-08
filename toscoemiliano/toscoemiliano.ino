@@ -6,7 +6,7 @@
 
 #define STD_DELAY 20
 
-#define TOSCO_HUE1 32
+#define TOSCO_HUE1 16
 #define TOSCO_HUE2 160
 
 // the array of leds
@@ -16,7 +16,7 @@ void setup() {
   // sanity check delay
   delay(2000);
 
-  FastLED.addLeds<CHIPSET, DATA_PIN, RGB>(leds, NUM_LEDS);
+  FastLED.addLeds<CHIPSET, DATA_PIN, GRB>(leds, NUM_LEDS);
   
   for (int i = 0; i < NUM_LEDS; i++) {
     leds[i] = CHSV(TOSCO_HUE1, 0, 255); // full white
