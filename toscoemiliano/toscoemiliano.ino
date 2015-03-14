@@ -1,6 +1,6 @@
 #include <FastLED.h>
 
-#define NUM_LEDS 98
+#define NUM_LEDS 196
 #define CHIPSET WS2811
 #define DATA_PIN 6
 
