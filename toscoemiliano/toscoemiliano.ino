@@ -5,6 +5,8 @@
 #define DATA_PIN 6
 
 #define STD_DELAY 5
+#define DROP_DELAY 10
+#define CHASING_DELAY 20
 #define SHORT_DELAY 20
 
 #define TOSCO_HUE1 16
@@ -12,6 +14,9 @@
 
 // the array of leds
 CRGB leds[NUM_LEDS];
+CHSV italian_green = CHSV(106, 255, 200);
+CHSV italian_white = CHSV(85, 0, 200);
+CHSV italian_red = CHSV(252, 200, 200);
 
 void setup() {
   // sanity check delay
@@ -25,9 +30,13 @@ void setup() {
 }
 
 void loop() {
- waterDrop();
- chaseLeft(3);
- chaseRight(3);
+ setItalianFlag();
+ chaseRight(3, CHASING_DELAY*4);
+ waterDrop(DROP_DELAY);
+ chaseLeft(3, CHASING_DELAY);
+ chaseRight(3, CHASING_DELAY);
+ setItalianFlag();
+ chaseRight(3, CHASING_DELAY*4);
  for (int a = NUM_LEDS; a >0; a--) {
    for (int b = 0; b < a; b++) {
      if (b == 0) {
@@ -42,7 +51,7 @@ void loop() {
  }
 }
 
-void waterDrop() {
+void waterDrop(int dropDelay) {
   for (int a = NUM_LEDS/2; a >= 0; a--) {
     for (int b = 0; b <= a; b++) {
       if (b == 0) {
@@ -55,12 +64,12 @@ void waterDrop() {
         leds[NUM_LEDS -1 - b] = CHSV(TOSCO_HUE1, 255, 255);
       }
       FastLED.show();
-      FastLED.delay(STD_DELAY);
+      FastLED.delay(dropDelay);
     }
   }
 }
 
-void chaseLeft(uint8_t cycles) {
+void chaseLeft(uint8_t cycles, int chase_delay) {
   for (uint8_t c = 0; c < cycles; c++) {
     for (int p = 0; p < NUM_LEDS; p++) {
       CRGB temp = leds[0];
@@ -72,12 +81,12 @@ void chaseLeft(uint8_t cycles) {
         }
       }
       FastLED.show();
-      FastLED.delay(SHORT_DELAY);
+      FastLED.delay(chase_delay);
     }
   }
 }
 
-void chaseRight(uint8_t cycles) {
+void chaseRight(uint8_t cycles, int chase_delay) {
   for (uint8_t c = 0; c < cycles; c++) {
     for (int p = 0; p < NUM_LEDS; p++) {
       CRGB temp = leds[NUM_LEDS - 1];
@@ -89,7 +98,28 @@ void chaseRight(uint8_t cycles) {
         }
       }
       FastLED.show();
-      FastLED.delay(SHORT_DELAY);
+      FastLED.delay(chase_delay);
     }
+  }
+}
+
+void setItalianFlag() {
+  for (int l = 0; l < NUM_LEDS; l++) {
+    int modulo = (l % 10);
+    if (modulo < 3) {
+      leds[l] = italian_green;
+    } else if (modulo < 6) {
+      leds[l] = italian_white;
+    } else if (modulo < 9) {
+      leds[l] = italian_red;
+    } else {
+      if (l % 2 == 0) {
+        leds[l] = CHSV(TOSCO_HUE1, 255, 255);
+      } else {
+        leds[l] = CHSV(TOSCO_HUE2, 255, 255);
+      }
+    }
+    FastLED.show();
+    FastLED.delay(DROP_DELAY);
   }
 }
