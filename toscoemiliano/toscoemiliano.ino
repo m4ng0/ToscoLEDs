@@ -5,7 +5,7 @@
 #define DATA_PIN 6
 
 #define STD_DELAY 5
-#define DROP_DELAY 10
+#define DROP_DELAY 5
 #define CHASING_DELAY 20
 #define SHORT_DELAY 20
 
@@ -30,12 +30,10 @@ void setup() {
 }
 
 void loop() {
- setItalianFlag();
- chaseRight(3, CHASING_DELAY*4);
  waterDrop(DROP_DELAY);
  chaseLeft(3, CHASING_DELAY);
  chaseRight(3, CHASING_DELAY);
- setItalianFlag();
+ setItalianFlag(DROP_DELAY);
  chaseRight(3, CHASING_DELAY*4);
  for (int a = NUM_LEDS; a >0; a--) {
    for (int b = 0; b < a; b++) {
@@ -103,23 +101,17 @@ void chaseRight(uint8_t cycles, int chase_delay) {
   }
 }
 
-void setItalianFlag() {
+void setItalianFlag(int dropDelay) {
   for (int l = 0; l < NUM_LEDS; l++) {
-    int modulo = (l % 10);
-    if (modulo < 3) {
+    int modulo = (l % 15);
+    if (modulo < 5) {
       leds[l] = italian_green;
-    } else if (modulo < 6) {
+    } else if (modulo < 10) {
       leds[l] = italian_white;
-    } else if (modulo < 9) {
-      leds[l] = italian_red;
     } else {
-      if (l % 2 == 0) {
-        leds[l] = CHSV(TOSCO_HUE1, 255, 255);
-      } else {
-        leds[l] = CHSV(TOSCO_HUE2, 255, 255);
-      }
+      leds[l] = italian_red;
     }
     FastLED.show();
-    FastLED.delay(DROP_DELAY);
+    FastLED.delay(dropDelay);
   }
 }
