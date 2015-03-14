@@ -103,13 +103,15 @@ void chaseRight(uint8_t cycles, int chase_delay) {
 
 void setItalianFlag(int dropDelay) {
   for (int l = 0; l < NUM_LEDS; l++) {
-    int modulo = (l % 15);
-    if (modulo < 5) {
+    int modulo = (l % 22);
+    if (modulo < 7) {
       leds[l] = italian_green;
-    } else if (modulo < 10) {
+    } else if (modulo < 14) {
       leds[l] = italian_white;
-    } else {
+    } else if (modulo < 21) {
       leds[l] = italian_red;
+    } else {
+      leds[l] = CHSV(TOSCO_HUE2, 255, 255);
     }
     FastLED.show();
     FastLED.delay(dropDelay);
