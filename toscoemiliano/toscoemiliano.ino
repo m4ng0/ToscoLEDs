@@ -53,6 +53,7 @@ void loop() {
  tosco_random(DROP_DELAY);
  fadings(5, FADING_DELAY);
  sinusoide(4*NUM_LEDS, CHASING_DELAY);
+ rainbow(12, DROP_DELAY);
 }
 
 void waterDrop(int dropDelay) {
@@ -68,7 +69,7 @@ void waterDrop(int dropDelay) {
         leds[NUM_LEDS -1 - b] = tosco_color1;
       }
       FastLED.show();
-      FastLED.delay(dropDelay);
+      FastLED.delay(a < (NUM_LEDS/4) ? dropDelay : dropDelay/2);
     }
   }
 }
@@ -157,6 +158,18 @@ void fadings(int ncycles, int fdelay) {
       hsv2rgb_rainbow(hsvvalues, leds, NUM_LEDS);
       FastLED.show();
       FastLED.delay(fdelay);
+    }
+  }
+}
+
+void rainbow(int ncycles, int rdelay) {
+  uint8_t rainbowhue = 0;
+  uint8_t deltahue = 4;
+  for (int c = 0; c < ncycles; c++) {
+    for (int l = 0; l < NUM_LEDS; l++) {
+      fill_rainbow(leds, NUM_LEDS, rainbowhue++, deltahue);
+      FastLED.show();
+      FastLED.delay(rdelay);
     }
   }
 }
