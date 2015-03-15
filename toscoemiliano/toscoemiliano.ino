@@ -7,25 +7,40 @@
 #define STD_DELAY 5
 #define DROP_DELAY 5
 #define CHASING_DELAY 20
-#define SHORT_DELAY 20
+#define FADING_DELAY 8
 
 #define TOSCO_HUE1 16
 #define TOSCO_HUE2 160
 
+#define qsubd(x, b)  ((x>b)?sin_brightness:(x>(b/2)?sin_brightness/2:(x>(b/3)?sin_brightness/3:(x>(b/4)?sin_brightness/4:0))))    // digital unsigned subtraction macro
+
 // the array of leds
 CRGB leds[NUM_LEDS];
+CHSV hsvvalues[NUM_LEDS];
+CHSV tosco_color1 = CHSV(TOSCO_HUE1, 255, 255);
+CHSV tosco_color2 = CHSV(TOSCO_HUE2, 255, 255);
+CHSV tosco_white = CHSV(85, 0, 255);
+CHSV tosco_colors[3];
 CHSV italian_green = CHSV(106, 255, 200);
 CHSV italian_white = CHSV(85, 0, 200);
 CHSV italian_red = CHSV(252, 200, 200);
+uint8_t sin_speed = 4;
+uint8_t sin_freq = 16;         // wave frequency, i.e. width of bars
+uint8_t sin_cutoff = 140;      // wave cutoff: lower value means longer wave
+uint8_t sin_brightness = 200;  // brightness added/removed by the wave
+uint8_t fading_max_delta = 220;
 
 void setup() {
   // sanity check delay
   delay(2000);
 
+  tosco_colors[0] = tosco_color1;
+  tosco_colors[1] = tosco_color2;
+  tosco_colors[2] = tosco_white;
   FastLED.addLeds<CHIPSET, DATA_PIN, GRB>(leds, NUM_LEDS);
   
   for (int i = 0; i < NUM_LEDS; i++) {
-    leds[i] = CHSV(TOSCO_HUE1, 0, 255); // full white
+    leds[i] = tosco_white; // full white
   }
 }
 
@@ -35,31 +50,22 @@ void loop() {
  chaseRight(3, CHASING_DELAY);
  setItalianFlag(DROP_DELAY);
  chaseRight(3, CHASING_DELAY*4);
- for (int a = NUM_LEDS; a >0; a--) {
-   for (int b = 0; b < a; b++) {
-     if (b == 0) {
-       leds[0] = CHSV(TOSCO_HUE2, 255, 255);
-     } else {
-       leds[b - 1] = CHSV(TOSCO_HUE2, 0, 255);
-       leds[b] = CHSV(TOSCO_HUE2, 255, 255);
-     }
-     FastLED.show();
-     FastLED.delay(STD_DELAY);
-   }
- }
+ tosco_random(DROP_DELAY);
+ fadings(5, FADING_DELAY);
+ sinusoide(4*NUM_LEDS, CHASING_DELAY);
 }
 
 void waterDrop(int dropDelay) {
   for (int a = NUM_LEDS/2; a >= 0; a--) {
     for (int b = 0; b <= a; b++) {
       if (b == 0) {
-        leds[0] = CHSV(TOSCO_HUE2, 255, 255);
-        leds[NUM_LEDS] = CHSV(TOSCO_HUE1, 255, 255);
+        leds[0] = tosco_color2;
+        leds[NUM_LEDS] = tosco_color1;
       } else {
-        leds[b - 1] = CHSV(TOSCO_HUE2, 0, 255);
-        leds[NUM_LEDS - b ] = CHSV(TOSCO_HUE1, 0, 255);
-        leds[b] = CHSV(TOSCO_HUE2, 255, 255);;
-        leds[NUM_LEDS -1 - b] = CHSV(TOSCO_HUE1, 255, 255);
+        leds[b - 1] = tosco_white;
+        leds[NUM_LEDS - b ] = tosco_white;
+        leds[b] = tosco_color2;
+        leds[NUM_LEDS -1 - b] = tosco_color1;
       }
       FastLED.show();
       FastLED.delay(dropDelay);
@@ -111,9 +117,46 @@ void setItalianFlag(int dropDelay) {
     } else if (modulo < 21) {
       leds[l] = italian_red;
     } else {
-      leds[l] = CHSV(TOSCO_HUE2, 255, 255);
+      leds[l] = tosco_color2;
     }
     FastLED.show();
     FastLED.delay(dropDelay);
+  }
+}
+
+void tosco_random(int dropDelay) {
+  for (int l = 0; l < NUM_LEDS; l++) {
+    hsvvalues[l] = tosco_colors[random8()%3];
+    leds[l] = hsvvalues[l];
+    FastLED.show();
+    FastLED.delay(dropDelay);
+  }
+}
+
+void sinusoide(int ncycles, int sdelay) {
+  int thisphase = 0;
+  for (int c = 0; c < ncycles; c++) {
+    for (int l = 0; l < NUM_LEDS; l++) {
+      int thisbright = qsubd(cubicwave8(l*sin_freq + thisphase), sin_cutoff);
+      leds[l].maximizeBrightness();
+      leds[l].fadeLightBy(thisbright);
+    }
+    FastLED.show();
+    FastLED.delay(sdelay);
+    thisphase+=sin_speed;
+  }
+}
+
+void fadings(int ncycles, int fdelay) {
+  for (int c = 0; c < ncycles; c++) {
+    for (int f = 0; f < 2*fading_max_delta; f++) {
+      for (int l = 0; l < NUM_LEDS; l++) {
+        hsvvalues[l].value -= (f < fading_max_delta? 1 : -1);
+      }
+      // bulk conversion
+      hsv2rgb_rainbow(hsvvalues, leds, NUM_LEDS);
+      FastLED.show();
+      FastLED.delay(fdelay);
+    }
   }
 }
