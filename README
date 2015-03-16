@@ -1,0 +1,3 @@
+Arduino project for an addressable RGB led strip using the excellent FastLED library (https://github.com/FastLED/FastLED).
+
+Some effects inspired by https://github.com/atuline/FastLED-Demos.
