@@ -1,6 +1,6 @@
 #include <FastLED.h>
 
-#define NUM_LEDS 196
+#define NUM_LEDS 192
 #define CHIPSET WS2811
 #define DATA_PIN 6
 
@@ -110,12 +110,12 @@ void chaseRight(uint8_t cycles, int chase_delay) {
 
 void setItalianFlag(int dropDelay) {
   for (int l = 0; l < NUM_LEDS; l++) {
-    int modulo = (l % 22);
-    if (modulo < 7) {
+    int modulo = (l % 19);
+    if (modulo < 6) {
       leds[l] = italian_green;
-    } else if (modulo < 14) {
+    } else if (modulo < 12) {
       leds[l] = italian_white;
-    } else if (modulo < 21) {
+    } else if (modulo < 18) {
       leds[l] = italian_red;
     } else {
       leds[l] = tosco_color2;
